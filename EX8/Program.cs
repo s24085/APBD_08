@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EX8.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,10 @@ builder.Services.AddDbContext<TripsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Dodaj usługi do kontenera.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+});
 
 // Dodaj Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace EX8.Models;
 
@@ -16,6 +17,6 @@ public partial class Client
     public string Telephone { get; set; } = null!;
 
     public string Pesel { get; set; } = null!;
-
+    [JsonIgnore]
     public virtual ICollection<ClientTrip> ClientTrips { get; set; } = new List<ClientTrip>();
 }
