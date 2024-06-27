@@ -33,7 +33,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Zmiana portu nasłuchu na 5002
-app.Urls.Add("http://localhost:5003");
+// Zmiana portu nasłuchu na 5006
+app.Urls.Add("http://localhost:5006");
 
 app.Run();
