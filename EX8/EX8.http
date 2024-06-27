@@ -1,0 +1,6 @@
+@EX8_HostAddress = http://localhost:5228
+
+GET {{EX8_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

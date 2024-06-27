@@ -1,0 +1,84 @@
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Threading.Tasks;
+ // Zmień na właściwą przestrzeń nazw Twojego kontekstu bazy danych i modeli
+using Microsoft.EntityFrameworkCore;
+
+
+[Route("api/[controller]")]
+[ApiController]
+public class TripsController : ControllerBase
+{
+    private readonly TripsDB _context;
+
+    public TripsController(TrpisDB context)
+    {
+        _context = context;
+    }
+
+    // GET: api/trips
+    [HttpGet]
+    public async Task<ActionResult> GetTrips([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var trips = await _context.Trips
+            .OrderByDescending(t => t.DateFrom)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var allPages = (int)Math.Ceiling(_context.Trips.Count() / (double)pageSize);
+
+        return Ok(new
+        {
+            pageNum = page,
+            pageSize = pageSize,
+            allPages = allPages,
+            trips
+        });
+    }
+
+    // DELETE: api/clients/{idClient}
+    [HttpDelete("clients/{idClient}")]
+    public async Task<ActionResult> DeleteClient(int idClient)
+    {
+        var client = await _context.Clients.FindAsync(idClient);
+        if (client == null) return NotFound();
+
+        var hasTrips = _context.Client_Trips.Any(ct => ct.IdClient == idClient);
+        if (hasTrips) return BadRequest("Client has assigned trips.");
+
+        _context.Clients.Remove(client);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    // POST: api/trips/{idTrip}/clients
+    [HttpPost("trips/{idTrip}/clients")]
+    public async Task<ActionResult> AddClientToTrip(int idTrip, [FromBody] Client client)
+    {
+        if (_context.Clients.Any(c => c.Pesel == client.Pesel))
+            return BadRequest("Client with this PESEL already exists.");
+
+        if (_context.Client_Trips.Any(ct => ct.IdTrip == idTrip && ct.IdClient == client.IdClient))
+            return BadRequest("Client is already assigned to this trip.");
+
+        var trip = await _context.Trips.FindAsync(idTrip);
+        if (trip == null || trip.DateFrom <= DateTime.Now)
+            return BadRequest("Trip does not exist or has already started.");
+
+        _context.Clients.Add(client);
+        await _context.SaveChangesAsync();
+
+        var clientTrip = new Client_Trip
+        {
+            IdClient = client.IdClient,
+            IdTrip = idTrip,
+            RegisteredAt = DateTime.Now
+        };
+        _context.Client_Trips.Add(clientTrip);
+        await _context.SaveChangesAsync();
+
+        return Ok(clientTrip);
+    }
+}

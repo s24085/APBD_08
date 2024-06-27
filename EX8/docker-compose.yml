@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "StrongPass123"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./Data/cw7_create.sql:/docker-entrypoint-initdb.d/cw7_create.sql
+      - ./Data/cw7_drop.sql:/docker-entrypoint-initdb.d/cw7_drop.sql
